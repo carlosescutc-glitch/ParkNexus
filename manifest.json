@@ -1,0 +1,24 @@
+{
+  "name": "Precision Park",
+  "short_name": "Precision Park",
+  "description": "Aplicación Web Progresiva para monitoreo, reservación y guiado en tiempo real en Precision Park.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafb",
+  "theme_color": "#0b5e40",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
