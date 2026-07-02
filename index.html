@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Metadatos de la aplicación y configuración de vista para móviles -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Precision Park - Technical Blueprint</title>
+
+  <!-- Enlace al Manifest de PWA para instalación -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Soporte para iOS (Apple Touch Icons & Web App status bar) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Fuentes de Google (Inter) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Hoja de estilos principal -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Iconos de FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <!-- Pantalla de Inicio de Sesión (Login Screen) -->
+  <!-- Se superpone a todo y debe completarse para entrar a la app -->
+  <div id="login-screen" class="login-overlay">
+    <div class="login-card">
+      <div class="logo-large">ParkNexus</div>
+      
+      <!-- Selector de Rol (Tabs) - Oculto para inicio de sesión integrado -->
+      <div class="login-role-tabs" style="display: none;">
+        <button class="role-tab active" id="tab-role-user" data-role="user"><i class="fas fa-user"></i> Usuario</button>
+        <button class="role-tab" id="tab-role-admin" data-role="admin"><i class="fas fa-user-shield"></i> Administrador</button>
+      </div>
+
+      <!-- VISTA 1: Iniciar Sesión -->
+      <div id="login-view">
+        <p>Inicia sesión con tu cuenta</p>
+        <form id="login-form">
+          <div class="form-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="login-email" placeholder="Correo Electrónico" required>
+          </div>
+          <div class="form-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="login-password" placeholder="Contraseña" required>
+            <button type="button" class="btn-toggle-password" id="btn-toggle-login-pass"><i class="fas fa-eye"></i></button>
+          </div>
+          <div class="form-options">
+            <label class="remember-me">
+              <input type="checkbox" id="login-remember"> Recordar sesión
+            </label>
+            <a href="#" class="forgot-pass-link" id="link-forgot-pass">¿Olvidaste tu contraseña?</a>
+          </div>
+          <button type="submit" class="btn-login">Ingresar</button>
+        </form>
+        <div class="login-footer">
+          ¿No tienes una cuenta? <a href="#" id="link-show-register">Regístrate aquí</a>
+        </div>
+      </div>
+
+      <!-- VISTA 2: Registro de Usuario -->
+      <div id="register-view" style="display: none;">
+        <p>Crea tu cuenta de usuario</p>
+        <form id="register-form">
+          <div class="form-group">
+            <i class="fas fa-user"></i>
+            <input type="text" id="reg-name" placeholder="Nombre(s)" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <div class="form-group">
+              <i class="fas fa-user-tag"></i>
+              <input type="text" id="reg-paternal" placeholder="A. Paterno" required>
+            </div>
+            <div class="form-group">
+              <i class="fas fa-user-tag"></i>
+              <input type="text" id="reg-maternal" placeholder="A. Materno" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="reg-email" placeholder="Correo Electrónico" required>
+          </div>
+          <div class="form-group">
+            <i class="fas fa-phone"></i>
+            <input type="tel" id="reg-phone" placeholder="Número Celular" required>
+          </div>
+          <div class="form-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="reg-password" placeholder="Contraseña" required>
+            <button type="button" class="btn-toggle-password" id="btn-toggle-reg-pass"><i class="fas fa-eye"></i></button>
+          </div>
+          <div class="form-group">
+            <i class="fas fa-shield-alt"></i>
+            <input type="password" id="reg-confirm" placeholder="Confirmar Contraseña" required>
+          </div>
+          <div class="form-options">
+            <label class="accept-tc">
+              <input type="checkbox" id="reg-accept-tc" required> Acepto los <a href="#" id="link-show-tc">Términos y Condiciones</a>
+            </label>
+          </div>
+          <button type="submit" class="btn-login">Registrarse</button>
+        </form>
+        <div class="login-footer">
+          ¿Ya tienes cuenta? <a href="#" id="link-show-login">Inicia sesión</a>
+        </div>
+      </div>
+
+      <!-- VISTA 3: Recuperar Contraseña -->
+      <div id="recovery-view" style="display: none;">
+        <p>Introduce tu correo para restablecer tu contraseña</p>
+        <form id="recovery-form">
+          <div class="form-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="recovery-email" placeholder="Correo Electrónico" required>
+          </div>
+          <button type="submit" class="btn-login">Enviar Código de Recuperación</button>
+        </form>
+        <div class="login-footer">
+          <a href="#" id="link-back-login">Volver al inicio de sesión</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor Principal de la Aplicación -->
+  <!-- Inicialmente oculto hasta que se inicie sesión -->
+  <div class="app-container" id="main-app" style="display: none;">
+
+    <!-- Panel Lateral (Sidebar) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>ParkNexus</h1>
+        <p>TECHNICAL BLUEPRINT</p>
+      </div>
+
+      <!-- Menú de Navegación -->
+      <nav class="sidebar-nav">
+        <!-- Menú del Usuario -->
+        <ul id="menu-user">
+          <li id="nav-sector-status" class="active"><a href="#"><i class="fas fa-th-large"></i> Sector Status</a></li>
+          <li id="nav-tickets"><a href="#"><i class="fas fa-ticket-alt"></i> Tickets y Pagos</a></li>
+          <li id="nav-mi-actividad"><a href="#"><i class="fas fa-history"></i> Mi Actividad</a></li>
+          <li id="nav-vehicles"><a href="#"><i class="fas fa-car"></i> Mis Vehículos</a></li>
+          <li id="nav-wallet"><a href="#"><i class="fas fa-wallet"></i> Mi Billetera</a></li>
+          <li id="nav-rewards"><a href="#"><i class="fas fa-gift"></i> Mis Recompensas</a></li>
+          <li id="nav-policies"><a href="#"><i class="fas fa-gavel"></i> Normas y Políticas</a></li>
+          <li id="nav-support"><a href="#"><i class="fas fa-question-circle"></i> Ayuda y Soporte</a></li>
+        </ul>
+        
+        <!-- Menú de Administrador -->
+        <ul id="menu-admin" style="display: none;">
+          <li id="nav-admin-editor"><a href="#"><i class="fas fa-map-marked-alt"></i> Editor de Mapa</a></li>
+          <li id="nav-admin-users"><a href="#"><i class="fas fa-users-cog"></i> Gestión de Usuarios</a></li>
+          <li id="nav-admin-reservations"><a href="#"><i class="fas fa-calendar-alt"></i> Ver Reservas</a></li>
+          <li id="nav-admin-payments"><a href="#"><i class="fas fa-receipt"></i> Historial Pagos</a></li>
+          <li id="nav-admin-stats"><a href="#"><i class="fas fa-chart-line"></i> Panel Admin (KPIs)</a></li>
+        </ul>
+      </nav>
+
+      <!-- Sección Inferior del Sidebar (Perfil de usuario) -->
+      <div class="sidebar-footer">
+        <button class="btn-reserve" id="btn-reserve-spot">Reservar Lugar</button>
+
+        <!-- Tarjeta de Perfil de Usuario -->
+        <div class="user-profile-card">
+          <div class="profile-main">
+            <!-- Avatar e info básica -->
+            <div class="avatar"><i class="fas fa-user"></i></div>
+            <div class="user-info">
+              <span class="user-name" id="display-user-name">Alex Rivera</span>
+              <span class="user-email" id="display-user-email">alex.rivera@example.com</span>
+            </div>
+          </div>
+
+          <!-- Estadísticas de Nivel y Visitas -->
+          <div class="profile-stats">
+            <div class="stat-item">
+              <span class="stat-label">Nivel</span>
+              <span class="stat-value" id="current-level">1</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Visitas</span>
+              <span class="stat-value" id="visit-count">12</span>
+            </div>
+          </div>
+
+          <!-- Barra de Progreso de Experiencia (XP) -->
+          <div class="user-level-container">
+            <div class="level-header">
+              <span class="level-text">Progreso</span>
+              <span class="points-text"><span id="current-points">0</span>/<span id="next-level-points">50</span>
+                XP</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="level-progress" style="width: 0%;"></div>
+            </div>
+            <div class="points-remaining">
+              <span id="points-remaining">50</span> pts para Nivel <span id="next-level-display">2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Contenido Principal (Main Content) -->
+    <main class="main-content">
+
+      <!-- Cabecera Superior (Top Header) -->
+      <header class="top-header">
+        <div class="logo-small">ParkNexus</div>
+
+        <!-- Barra de Búsqueda -->
+        <div class="search-bar">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Buscar secciones o lugares...">
+        </div>
+
+        <!-- Botones de Acción (Notificaciones, Modo Oscuro, Usuario) -->
+        <div class="header-actions">
+          <button class="btn-icon" id="btn-dark-mode" title="Modo Oscuro"><i class="fas fa-moon"></i></button>
+          <button class="btn-icon" title="Notificaciones"><i class="fas fa-bell"></i><span
+              class="badge"></span></button>
+          <button class="btn-icon" id="btn-user-modal" title="Perfil de Usuario"><i
+              class="fas fa-user-circle"></i></button>
+        </div>
+      </header>
+
+      <!-- Área de Dashboard donde se muestran las diferentes vistas -->
+      <div class="dashboard-area">
+
+        <!-- Cabecera del Dashboard (Resumen de ocupación) -->
+        <div class="dashboard-header" id="dashboard-header">
+          <div class="title-section">
+            <span class="live-monitoring">MONITOREO EN VIVO</span>
+            <h2>Technical <em>Croquis</em></h2>
+            <p>Resumen de utilización. <span id="header-available-text">28/30</span> posiciones verificadas como libres.
+            </p>
+          </div>
+
+          <!-- Insignias de disponibilidad -->
+          <div class="stats-badges">
+            <span class="badge-available"><i class="fas fa-circle"></i> LIBRES: <span
+                id="val-available">28</span></span>
+            <span class="badge-occupied"><i class="fas fa-circle"></i> OCUPADOS: <span
+                id="val-occupied">02</span></span>
+          </div>
+
+          <!-- Barra de llenado (Gradiente Verde a Rojo) -->
+          <div class="occupancy-container">
+            <div class="occupancy-labels">
+              <span>Libre</span>
+              <span>Lleno</span>
+            </div>
+            <div class="occupancy-bar-bg">
+              <div class="occupancy-bar-fill" id="occupancy-fill" style="width: 6.6%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selector de Pisos (Floor Selector) -->
+        <div class="floor-selector-container" id="floor-selector-container">
+          <button class="floor-tab active" data-floor="1"><i class="fas fa-layer-group"></i> Piso 1</button>
+          <button class="floor-tab" data-floor="2"><i class="fas fa-layer-group"></i> Piso 2</button>
+          <button class="floor-tab" data-floor="3"><i class="fas fa-layer-group"></i> Piso 3</button>
+          <button class="floor-tab" data-floor="4"><i class="fas fa-layer-group"></i> Piso 4</button>
+        </div>
+
+        <!-- VISTA 1: Lista de Sectores (ListView) -->
+        <!-- Muestra cuadrículas separadas por sección (A a H) dinámicamente -->
+        <div class="sectors-container" id="list-view-container">
+          <!-- Se genera dinámicamente en app.js para Piso 1, 2, 3, 4 y Secciones A-H -->
+        </div>
+
+        <!-- VISTA 2: Mapa Visual (Map View) -->
+        <!-- Muestra el mapa en 2D con ruta trazada -->
+        <div id="visual-map-container" style="display: none;">
+          <div class="map-header">
+            <div>
+              <h3 id="map-floor-title">NORTH WING DECK - PISO 1</h3>
+              <p id="map-floor-subtitle">LEVEL 01 • ALTA DENSIDAD</p>
+            </div>
+            <!-- Leyenda de colores del mapa -->
+            <div class="map-legend">
+              <span class="legend-item"><span class="color-box bg-green"></span> LIBRE</span>
+              <span class="legend-item"><span class="color-box bg-red"></span> OCUPADO</span>
+            </div>
+            <!-- Botones de Acción sobre el Auto (Guardar/Encontrar/Reservar/Guiar) -->
+            <div class="car-actions">
+              <button id="btn-save-car" class="btn-action-car"><i class="fas fa-save"></i> Guardar Auto</button>
+              <button id="btn-find-car" class="btn-action-car"><i class="fas fa-search-location"></i> Encontrar Auto</button>
+              <button id="btn-map-reserve-spot" class="btn-action-car" style="background: #f59e0b; color: black;"><i class="fas fa-calendar-check"></i> Reservar Lugar</button>
+              <button id="btn-find-spot" class="btn-action-car" style="background: #3b82f6; color: white;"><i class="fas fa-route"></i> Encontrar Lugar</button>
+            </div>
+          </div>
+
+          <!-- Contenedor donde se dibujan los SVG (rutas) y los Divs (lugares) -->
+          <div class="map-grid-wrapper">
+            <div class="map-scroll-content" id="map-scroll-content">
+              <svg class="map-path-svg" id="map-path-svg" xmlns="http://www.w3.org/2000/svg">
+                <!-- La ruta punteada inteligente se dibuja aquí -->
+              </svg>
+
+              <!-- Contenedor para los cuadros de estacionamiento -->
+              <div class="map-grid-blocks" id="map-grid-blocks"></div>
+
+              <!-- Triángulo rojo que representa al usuario moviéndose -->
+              <div class="player-triangle" id="player-triangle">
+                <div class="triangle-shape"></div>
+                <div class="triangle-label">TÚ</div>
+              </div>
+            </div>
+
+            <!-- Temporizador de Reserva Automática (Oculto por defecto) -->
+            <div id="timer-popup" class="timer-popup" style="display: none;">
+              <div class="timer-circle">
+                <span id="timer-countdown">10</span>
+              </div>
+              <p>Reacomodando...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA 3: Mi Actividad (History View) -->
+        <!-- Muestra una tabla con el registro de actividad -->
+        <div id="activity-view-container" style="display: none;">
+          <div class="activity-header">
+            <h3>Mi Actividad</h3>
+            <p>Registro de tus visitas y movimientos.</p>
+          </div>
+          <div class="activity-table-wrapper">
+            <table class="activity-table">
+              <thead>
+                <tr>
+                  <th>Acción</th>
+                  <th>Lugar</th>
+                  <th>Dirección</th>
+                  <th>Hora</th>
+                </tr>
+              </thead>
+              <tbody id="activity-table-body">
+                <!-- Se llena mediante JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VISTA 4: Tickets y Pagos (Tickets View) -->
+        <div id="tickets-view-container" style="display: none;">
+          <div class="tickets-view-header">
+            <h3>Gestión de Tickets y Pagos</h3>
+            <p>Visualiza tu ticket de estacionamiento, controla tu tiempo y realiza pagos digitales de forma instantánea.</p>
+          </div>
+          
+          <div class="tickets-grid">
+            <!-- Columna Izquierda: Ticket Activo (Tarjeta física de boleto) -->
+            <div class="ticket-card-section">
+              <h4>Boleto Digital Activo</h4>
+              <div id="no-active-ticket" class="no-ticket-state">
+                <i class="fas fa-receipt empty-icon"></i>
+                <p>No tienes ningún boleto activo en este momento.</p>
+                <span class="subtext">Selecciona un lugar disponible en el croquis o utiliza el simulador para ingresar.</span>
+              </div>
+              
+              <div id="active-ticket-wrapper" style="display: none;">
+                <!-- Boleto Físico Estilizado -->
+                <div class="physical-ticket">
+                  <div class="ticket-decor-top"></div>
+                  <div class="ticket-header">
+                    <span class="brand-logo">PARKNEXUS</span>
+                    <span class="ticket-badge" id="ticket-status-badge">RESERVADO</span>
+                  </div>
+                  
+                  <div class="ticket-qr-container">
+                    <img id="ticket-qr-img" src="" alt="Código QR del Ticket">
+                    <div id="ticket-barcode-fallback" class="barcode-fallback" style="display: none;">
+                      <div class="barcode-lines"></div>
+                      <span id="barcode-text"></span>
+                    </div>
+                  </div>
+                  
+                  <div class="ticket-code-section">
+                    <span class="label">CÓDIGO ÚNICO</span>
+                    <h3 id="ticket-alphanumeric-code">ABC123420052026</h3>
+                  </div>
+                  
+                  <div class="ticket-details-grid">
+                    <div class="detail-item">
+                      <span class="detail-label">CAJÓN</span>
+                      <span class="detail-val" id="ticket-spot-id">A-03</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">INGRESO</span>
+                      <span class="detail-val" id="ticket-entry-time">--:--</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">PLACA</span>
+                      <span class="detail-val" id="ticket-vehicle-plate">--</span>
+                    </div>
+                    <div class="detail-item">
+                      <span class="detail-label">VEHÍCULO</span>
+                      <span class="detail-val" id="ticket-vehicle-model">--</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Contador de Tiempo Acumulado -->
+                  <div class="ticket-timer-section">
+                    <div class="timer-kpi">
+                      <span class="timer-label" id="timer-kpi-label">TIEMPO ACUMULADO</span>
+                      <h2 class="timer-counter" id="ticket-timer-counter">00:00:00</h2>
+                    </div>
+                    <div class="timer-kpi price-kpi">
+                      <span class="timer-label">TOTAL ACUMULADO</span>
+                      <h2 class="timer-counter price-counter" id="ticket-price-counter">$0.00</h2>
+                    </div>
+                  </div>
+
+                  <!-- Temporizador de expiración de reserva (si aplica) -->
+                  <div id="ticket-expiration-alert" class="expiration-alert" style="display: none;">
+                    <i class="fas fa-clock"></i> Expiración de reserva en: <span id="ticket-expiration-countdown">60</span>s
+                  </div>
+
+                  <!-- Contenedor de Expiración Excedida (Decisión de 1min) -->
+                  <div id="ticket-expired-decision" class="expiration-alert" style="display: none; flex-direction: column; gap: 0.8rem; background: rgba(239, 68, 68, 0.1); border: 1.5px solid #ef4444; border-radius: 8px; padding: 1rem; color: #ef4444; margin: 1rem 0; box-shadow: 0 4px 10px rgba(239,68,68,0.15);">
+                    <div style="font-weight: 800; font-size: 0.95rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem; letter-spacing: 0.5px;">
+                      <i class="fas fa-exclamation-circle" style="font-size: 1.1rem; animation: blink 1s infinite;"></i> ¡ESPACIO YA NO RESERVADO!
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin: 0; line-height: 1.3;">Su tolerancia de llegada ha expirado. Dispone de <span id="ticket-decision-countdown" style="font-weight: 800; color: #ef4444; font-size: 0.85rem;">60</span>s para seleccionar una opción:</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.2rem;">
+                      <button id="btn-reserve-again" class="btn-ticket-action btn-pay" style="padding: 0.6rem; font-size: 0.7rem; background: #eab308; color: black; font-weight: 700; border-radius: 6px;"><i class="fas fa-redo"></i> Reservar de nuevo</button>
+                      <button id="btn-lose-reservation" class="btn-ticket-action btn-pay" style="padding: 0.6rem; font-size: 0.7rem; background: #ef4444; color: white; font-weight: 700; border-radius: 6px;"><i class="fas fa-times-circle"></i> Perder reservación</button>
+                    </div>
+                  </div>
+                  
+                  <div class="ticket-footer-actions" style="display: flex; gap: 0.5rem;">
+                    <button class="btn-ticket-action btn-pay" id="btn-pay-ticket"><i class="fas fa-wallet"></i> Pagar y Salir</button>
+                    <button class="btn-ticket-action" id="btn-cancel-reservation" style="background: #ef4444; color: white; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; display: none; flex: 1; align-items: center; justify-content: center; gap: 0.5rem;"><i class="fas fa-times-circle"></i> Cancelar Reserva</button>
+                  </div>
+                  
+                  <div class="ticket-decor-bottom"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Columna Derecha: Simulador de Entrada y Salida -->
+            <div class="simulation-section">
+              <div class="sim-card">
+                <h4><i class="fas fa-tools"></i> Simulador de Acceso Directo</h4>
+                <p>Simula el comportamiento físico de las plumas de entrada y salida del estacionamiento.</p>
+                
+                <div class="sim-form-group">
+                  <label for="sim-spot-select">1. Seleccionar Cajón Libre</label>
+                  <select id="sim-spot-select" class="sim-select">
+                    <!-- Se llena con cajones disponibles -->
+                  </select>
+                </div>
+                
+                <div class="sim-form-group">
+                  <label>2. Información del Vehículo</label>
+                  <div class="input-grid">
+                    <input type="text" id="sim-plate" placeholder="Placa (ej. HFD-342)" class="sim-input">
+                    <input type="text" id="sim-vehicle" placeholder="Modelo (ej. Tesla Model 3)" class="sim-input">
+                  </div>
+                </div>
+                
+                <div class="sim-actions-grid">
+                  <button id="btn-sim-entry" class="btn-sim btn-sim-entry"><i class="fas fa-arrow-down"></i> Simular Entrada</button>
+                </div>
+                
+                <div class="divider-text"><span>O VALIDA UN TICKET</span></div>
+                
+                <div class="sim-form-group">
+                  <label for="sim-ticket-code-input">Ingresar Código o Placa Existente</label>
+                  <div class="search-input-wrapper">
+                    <input type="text" id="sim-ticket-code-input" placeholder="Ej. ABC123420052026 o HFD-342" class="sim-input">
+                    <button id="btn-sim-search" class="btn-sim-search-icon"><i class="fas fa-search"></i></button>
+                  </div>
+                </div>
+                
+                <div class="sim-actions-grid">
+                  <button id="btn-sim-exit" class="btn-sim btn-sim-exit"><i class="fas fa-arrow-up"></i> Simular Escáner de Salida</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabla histórica de Tickets de este usuario -->
+          <div class="ticket-history-section">
+            <h4>Historial de Tickets Digitales</h4>
+            <div class="activity-table-wrapper">
+              <table class="activity-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Cajón</th>
+                    <th>Estado</th>
+                    <th>Vehículo</th>
+                    <th>Ingreso / Salida</th>
+                    <th>Pago</th>
+                    <th>Detalles</th>
+                  </tr>
+                </thead>
+                <tbody id="tickets-table-body">
+                  <!-- Se llena dinámicamente -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA 5: Panel Admin (Admin Dashboard View) -->
+        <div id="admin-view-container" style="display: none;">
+          <div class="admin-header">
+            <h3>Panel Administrativo y Auditoría</h3>
+            <p>Monitoreo financiero, control de ocupación total, auditoría de base de datos e indicadores históricos.</p>
+          </div>
+          
+          <!-- KPI Cards Grid -->
+          <div class="admin-kpis-grid">
+            <div class="kpi-card">
+              <div class="kpi-icon-wrapper bg-green-light">
+                <i class="fas fa-dollar-sign text-green"></i>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-title">Ingresos Totales</span>
+                <h3 class="kpi-value" id="kpi-revenue">$0.00</h3>
+                <span class="kpi-trend text-green"><i class="fas fa-arrow-up"></i> +100% hoy</span>
+              </div>
+            </div>
+            
+            <div class="kpi-card">
+              <div class="kpi-icon-wrapper bg-blue-light">
+                <i class="fas fa-car text-blue"></i>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-title">Cajones Ocupados</span>
+                <h3 class="kpi-value" id="kpi-occupancy">0/26</h3>
+                <span class="kpi-trend text-blue" id="kpi-occupancy-percent">0% ocupación</span>
+              </div>
+            </div>
+            
+            <div class="kpi-card">
+              <div class="kpi-icon-wrapper bg-yellow-light">
+                <i class="fas fa-calendar-check text-yellow"></i>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-title">Reservas Activas</span>
+                <h3 class="kpi-value" id="kpi-reservations">0</h3>
+                <span class="kpi-trend text-yellow">Actualizado en vivo</span>
+              </div>
+            </div>
+            
+            <div class="kpi-card">
+              <div class="kpi-icon-wrapper bg-purple-light">
+                <i class="fas fa-users text-purple"></i>
+              </div>
+              <div class="kpi-info">
+                <span class="kpi-title">Accesos Registrados</span>
+                <h3 class="kpi-value" id="kpi-access-count">0</h3>
+                <span class="kpi-trend text-purple">Historial total</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Gráficas Estadísticas (Pure CSS/SVG) -->
+          <div class="charts-grid">
+            <div class="chart-container">
+              <h4>Distribución de Ocupación por Sector</h4>
+              <div class="svg-chart-wrapper">
+                <!-- Gráfica de barras SVG interactiva -->
+                <svg viewBox="0 0 400 200" class="svg-bar-chart">
+                  <!-- Líneas de cuadrícula -->
+                  <line x1="50" y1="20" x2="380" y2="20" stroke="var(--border-color)" stroke-dasharray="4 4" />
+                  <line x1="50" y1="70" x2="380" y2="70" stroke="var(--border-color)" stroke-dasharray="4 4" />
+                  <line x1="50" y1="120" x2="380" y2="120" stroke="var(--border-color)" stroke-dasharray="4 4" />
+                  <line x1="50" y1="170" x2="380" y2="170" stroke="var(--text-muted)" stroke-width="1.5" />
+                  
+                  <!-- Etiquetas Y -->
+                  <text x="40" y="25" fill="var(--text-muted)" font-size="10" text-anchor="end">100%</text>
+                  <text x="40" y="75" fill="var(--text-muted)" font-size="10" text-anchor="end">50%</text>
+                  <text x="40" y="125" fill="var(--text-muted)" font-size="10" text-anchor="end">25%</text>
+                  <text x="40" y="175" fill="var(--text-muted)" font-size="10" text-anchor="end">0%</text>
+                  
+                  <!-- Barras (Se manipulan sus alturas con JS, aquí una base de diseño inicial) -->
+                  <!-- Sector A -->
+                  <rect id="bar-sector-a" x="90" y="170" width="40" height="0" fill="#3b82f6" rx="4" />
+                  <text x="110" y="190" fill="var(--text-main)" font-size="11" text-anchor="middle">Sector A</text>
+                  <text id="lbl-sector-a" x="110" y="160" fill="var(--text-main)" font-size="10" font-weight="bold" text-anchor="middle">0%</text>
+                  
+                  <!-- Sector B -->
+                  <rect id="bar-sector-b" x="190" y="170" width="40" height="0" fill="#10b981" rx="4" />
+                  <text x="210" y="190" fill="var(--text-main)" font-size="11" text-anchor="middle">Sector B</text>
+                  <text id="lbl-sector-b" x="210" y="160" fill="var(--text-main)" font-size="10" font-weight="bold" text-anchor="middle">0%</text>
+                  
+                  <!-- Sector C -->
+                  <rect id="bar-sector-c" x="290" y="170" width="40" height="0" fill="#f59e0b" rx="4" />
+                  <text x="310" y="190" fill="var(--text-main)" font-size="11" text-anchor="middle">Sector C</text>
+                  <text id="lbl-sector-c" x="310" y="160" fill="var(--text-main)" font-size="10" font-weight="bold" text-anchor="middle">0%</text>
+                </svg>
+              </div>
+            </div>
+            
+            <div class="chart-container">
+              <h4>Fluctuación Horaria de Accesos (Peak Hours)</h4>
+              <div class="svg-chart-wrapper">
+                <!-- Gráfica de línea SVG interactiva -->
+                <svg viewBox="0 0 400 200" class="svg-line-chart">
+                  <!-- Cuadrícula -->
+                  <line x1="40" y1="20" x2="380" y2="20" stroke="var(--border-color)" stroke-dasharray="4 4" />
+                  <line x1="40" y1="70" x2="380" y2="70" stroke="var(--border-color)" stroke-dasharray="4 4" />
+                  <line x1="40" y1="120" x2="380" y2="120" stroke="var(--border-color)" stroke-dasharray="4 4" />
+                  <line x1="40" y1="170" x2="380" y2="170" stroke="var(--text-muted)" stroke-width="1.5" />
+                  
+                  <!-- Eje X labels -->
+                  <text x="60" y="188" fill="var(--text-muted)" font-size="9" text-anchor="middle">08:00</text>
+                  <text x="120" y="188" fill="var(--text-muted)" font-size="9" text-anchor="middle">12:00</text>
+                  <text x="180" y="188" fill="var(--text-muted)" font-size="9" text-anchor="middle">16:00</text>
+                  <text x="240" y="188" fill="var(--text-muted)" font-size="9" text-anchor="middle">20:00</text>
+                  <text x="300" y="188" fill="var(--text-muted)" font-size="9" text-anchor="middle">24:00</text>
+                  
+                  <!-- Línea de tendencia -->
+                  <path d="M 60,160 Q 120,80 180,120 T 300,50 T 360,150" fill="none" stroke="var(--primary-color)" stroke-width="3" />
+                  <circle cx="180" cy="120" r="4" fill="var(--primary-color)" />
+                  <circle cx="300" cy="50" r="4" fill="var(--primary-color)" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apartado de Estadísticas Detalladas (Añadido) -->
+          <div class="admin-advanced-stats-section" style="margin-top: 2rem; background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <h4 style="color: var(--primary-color); margin-bottom: 1rem;"><i class="fas fa-chart-bar"></i> Estadísticas Detalladas de Uso</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+              <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; text-align: center; border-left: 4px solid var(--primary-color);">
+                <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Tiempo Promedio de Uso</span>
+                <h3 id="stat-avg-time" style="font-size: 1.6rem; font-weight: 800; margin-top: 0.5rem; color: var(--text-main);">0s</h3>
+              </div>
+              <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; text-align: center; border-left: 4px solid #3b82f6;">
+                <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Sector Más Frecuentado</span>
+                <h3 id="stat-most-popular-sector" style="font-size: 1.6rem; font-weight: 800; margin-top: 0.5rem; color: var(--text-main);">Ninguno</h3>
+              </div>
+              <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; text-align: center; border-left: 4px solid #f59e0b;">
+                <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Eficiencia de Reservas</span>
+                <h3 id="stat-reservation-efficiency" style="font-size: 1.6rem; font-weight: 800; margin-top: 0.5rem; color: var(--text-main);">0%</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Usuarios dentro del estacionamiento (Añadido) -->
+          <div class="active-users-section" style="margin-top: 2rem; margin-bottom: 2rem; background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <h4 style="color: var(--primary-color); margin-bottom: 1rem;"><i class="fas fa-parking"></i> Usuarios Dentro del Estacionamiento</h4>
+            <div class="activity-table-wrapper">
+              <table class="activity-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Cajón</th>
+                    <th>Vehículo (Placa)</th>
+                    <th>Hora de Ingreso</th>
+                  </tr>
+                </thead>
+                <tbody id="active-parked-users-body">
+                  <!-- Se llena dinámicamente -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Inspector de Base de Datos -->
+          <div class="db-inspector-section">
+            <div class="db-inspector-header">
+              <h4><i class="fas fa-database"></i> Auditoría de Tablas de Base de Datos (Persistente)</h4>
+              
+              <div class="db-controls">
+                <select id="db-table-select" class="sim-select db-select">
+                  <option value="tickets">Tabla: Tickets Digitales</option>
+                  <option value="reservations">Tabla: Reservaciones</option>
+                  <option value="payments">Tabla: Pagos</option>
+                  <option value="accessHistory">Tabla: Historial de Accesos</option>
+                  <option value="users">Tabla: Usuarios</option>
+                  <option value="vehicles">Tabla: Vehículos</option>
+                </select>
+                <button id="btn-db-reset" class="btn-sim btn-sim-exit btn-reset-db"><i class="fas fa-trash-alt"></i> Formatear DB</button>
+              </div>
+            </div>
+            
+            <div class="activity-table-wrapper">
+              <table class="activity-table db-table">
+                <thead id="db-table-header">
+                  <!-- Se llena dinámicamente -->
+                </thead>
+                <tbody id="db-table-body">
+                  <!-- Se llena dinámicamente -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA 6: Mis Vehículos (Vehicles View) -->
+        <div id="vehicles-view-container" style="display: none;">
+          <div class="vehicles-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div>
+              <h3>Mis Vehículos Registrados</h3>
+              <p>Administra los vehículos asociados a tu cuenta para reservaciones instantáneas.</p>
+            </div>
+            <button class="btn-action-car" id="btn-add-vehicle-modal" style="background: var(--primary-color); width: auto;"><i class="fas fa-plus"></i> Registrar Vehículo Nuevo</button>
+          </div>
+          <div class="vehicles-grid" id="user-vehicles-list-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 5rem;">
+            <!-- Se llena dinámicamente -->
+          </div>
+        </div>
+
+        <!-- VISTA 7: Mi Billetera (Wallet View) -->
+        <div id="wallet-view-container" style="display: none; padding-bottom: 5rem;">
+          <div class="wallet-header" style="margin-bottom: 2rem;">
+            <h3>Mi Billetera Digital</h3>
+            <p>Monedero electrónico de prepago. Recarga saldo y realiza tus pagos sin tarjetas físicas.</p>
+          </div>
+          
+          <div class="wallet-dashboard" style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+            <!-- Columna de Balance -->
+            <div class="wallet-balance-card" style="background: linear-gradient(135deg, var(--primary-color), #0d9488); border-radius: 16px; padding: 2rem; color: white; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 8px 20px rgba(11,94,64,0.3); height: 260px;">
+              <div>
+                <span style="font-size: 0.85rem; font-weight: 600; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px;">Saldo Disponible</span>
+                <h1 id="wallet-balance-display" style="font-size: 2.8rem; font-weight: 800; margin: 0.5rem 0;">$0.00</h1>
+              </div>
+              <div style="margin-top: 1.5rem;">
+                <button id="btn-wallet-recharge" class="btn-action-car" style="background: white; color: var(--primary-color); font-weight: 800; width: 100%; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"><i class="fas fa-plus-circle"></i> Recargar Saldo</button>
+              </div>
+            </div>
+            
+            <!-- Columna de Transacciones -->
+            <div class="wallet-transactions-card" style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+              <h4 style="margin-bottom: 1rem; color: var(--primary-color); font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-history"></i> Historial de Movimientos</h4>
+              <div class="activity-table-wrapper" style="max-height: 250px; overflow-y: auto;">
+                <table class="activity-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Concepto</th>
+                      <th>Método</th>
+                      <th>Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody id="wallet-transactions-body">
+                    <!-- Se llena dinámicamente -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA 8: Mis Recompensas (Rewards View) -->
+        <div id="rewards-view-container" style="display: none; padding-bottom: 5rem;">
+          <div class="rewards-header" style="margin-bottom: 2rem;">
+            <h3>Mis Recompensas & Fidelidad</h3>
+            <p>Acumula puntos con cada reservación y canjéalos por horas gratis o beneficios exclusivos.</p>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;">
+            <!-- Nivel e Info -->
+            <div style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+              <div>
+                <h4 style="margin-bottom: 1.5rem; color: var(--primary-color);">Nivel y Puntos</h4>
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                  <div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: var(--primary-color); margin: 0 auto 1rem; border: 4px solid var(--primary-color); font-weight: 800;" id="rewards-level-badge">1</div>
+                  <h3 id="rewards-points-display" style="font-size: 1.8rem; font-weight: 800;">12 Puntos</h3>
+                  <p style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">Puntos expiran el: <span id="rewards-expiry-date">31/12/2026</span></p>
+                </div>
+                
+                <!-- Barra de Progreso -->
+                <div class="user-level-container" style="margin-top: 1.5rem;">
+                  <div class="level-header">
+                    <span class="level-text">Progreso al Nivel <span id="rewards-next-level">2</span></span>
+                    <span class="points-text"><span id="rewards-points-current">12</span>/<span id="rewards-points-needed">50</span> XP</span>
+                  </div>
+                  <div class="progress-bar-bg" style="height: 12px; border-radius: 6px;">
+                    <div class="progress-bar-fill" id="rewards-progress-fill" style="width: 24%; height: 100%; border-radius: 6px;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Canje de Cupones -->
+            <div style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+              <h4 style="margin-bottom: 1.5rem; color: var(--primary-color);">Cupones y Canjes Disponibles</h4>
+              <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;" id="coupons-list-container">
+                <!-- Se llena dinámicamente -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA 9: Normas y Políticas (Policies View) -->
+        <div id="policies-view-container" style="display: none; padding-bottom: 5rem;">
+          <div class="policies-header" style="margin-bottom: 2rem;">
+            <h3>Normas y Políticas de Uso</h3>
+            <p>Consulta las directrices de permanencia, normas de convivencia y políticas de vencimiento del estacionamiento.</p>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem;">
+            <!-- Normas de Uso -->
+            <div style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+              <h4 style="color: var(--primary-color); margin-bottom: 1.5rem;"><i class="fas fa-gavel"></i> Normas Generales de Uso</h4>
+              <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+                <div class="policy-item">
+                  <h5 style="font-weight: 700; margin-bottom: 0.3rem; color: var(--text-main);">1. Respeto a los espacios asignados</h5>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">Cada usuario deberá estacionar su vehículo únicamente en el espacio que haya reservado. Ocupar un lugar distinto al asignado podrá generar una amonestación económica y afectar la prioridad del usuario en futuras reservaciones.</p>
+                </div>
+                <div class="policy-item">
+                  <h5 style="font-weight: 700; margin-bottom: 0.3rem; color: var(--text-main);">2. Cuidado de las instalaciones</h5>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">Queda prohibido dañar, alterar o vandalizar cualquier elemento físico o tecnológico del estacionamiento. El incumplimiento de esta norma podrá generar sanciones administrativas y restricciones futuras.</p>
+                </div>
+                <div class="policy-item">
+                  <h5 style="font-weight: 700; margin-bottom: 0.3rem; color: var(--text-main);">3. Estacionamiento correcto</h5>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">Los usuarios deberán estacionar sus vehículos dentro de los límites señalados de cada cajón. Invadir otros espacios o bloquear áreas de circulación podrá ocasionar una amonestación.</p>
+                </div>
+                <div class="policy-item">
+                  <h5 style="font-weight: 700; margin-bottom: 0.3rem; color: var(--text-main);">4. Respeto entre usuarios</h5>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">Se deberá mantener una conducta respetuosa hacia otros usuarios y personal del estacionamiento. Las agresiones verbales o físicas podrán derivar en sanciones o suspensión temporal de la cuenta.</p>
+                </div>
+                <div class="policy-item">
+                  <h5 style="font-weight: 700; margin-bottom: 0.3rem; color: var(--text-main);">5. Respeto a los espacios para personas con discapacidad</h5>
+                  <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">Los espacios accesibles deberán ser utilizados únicamente por usuarios autorizados. El uso indebido será considerado una falta grave y podrá generar sanciones económicas y restricciones en futuras reservaciones.</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Normas de Vencimiento -->
+            <div style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02); height: fit-content;">
+              <h4 style="color: #eab308; margin-bottom: 1.5rem;"><i class="fas fa-clock"></i> Normas de Vencimiento</h4>
+              <ul style="list-style-type: none; display: flex; flex-direction: column; gap: 1rem; padding: 0; margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                <li style="display: flex; gap: 0.8rem; align-items: flex-start;"><i class="fas fa-bell" style="color: #eab308; margin-top: 3px;"></i> <span><strong>Notificaciones de tiempo:</strong> El sistema enviará avisos automáticos cuando resten 15 minutos y 5 minutos antes de la expiración de la reservación.</span></li>
+                <li style="display: flex; gap: 0.8rem; align-items: flex-start;"><i class="fas fa-hourglass-end" style="color: #eab308; margin-top: 3px;"></i> <span><strong>Liberación Automática:</strong> Si el auto no es registrado como ingresado tras la expiración del tiempo de tolerancia, el cajón cambiará a estado libre y la reserva se marcará como vencida.</span></li>
+                <li style="display: flex; gap: 0.8rem; align-items: flex-start;"><i class="fas fa-clipboard-list" style="color: #eab308; margin-top: 3px;"></i> <span><strong>Auditoría de historial:</strong> Cada vencimiento se grabará de manera irreversible en el registro permanente de accesos de la base de datos local.</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA 10: Ayuda y Soporte (Support View) -->
+        <div id="support-view-container" style="display: none; padding-bottom: 5rem;">
+          <div class="support-header" style="margin-bottom: 2rem;">
+            <h3>Centro de Ayuda y Soporte Técnico</h3>
+            <p>Comunícate con nuestros agentes, revisa las FAQs o solicita asistencia de emergencia inmediata.</p>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem;">
+            <!-- Botón de Emergencia y Canales -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              <!-- Botón de Emergencia -->
+              <div style="background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; border-radius: 16px; padding: 2rem; text-align: center; box-shadow: 0 4px 15px rgba(239,68,68,0.15);">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem; animation: pulse 1s infinite alternate;"></i>
+                <h4 style="color: #ef4444; font-weight: 800; font-size: 1.2rem; margin-bottom: 0.5rem;">¿NECESITAS AYUDA INMEDIATA?</h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.4;">Presiona este botón para mandar tu ubicación, piso y datos de contacto de emergencia al Administrador.</p>
+                <button id="btn-emergency-panic" class="btn-login" style="background: #ef4444; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; border-radius: 8px;"><i class="fas fa-phone-alt"></i> Enviar Alerta de Emergencia</button>
+              </div>
+              
+              <!-- Canales -->
+              <div style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem;">
+                <h4 style="color: var(--primary-color); margin-bottom: 1rem;">Otros Canales</h4>
+                <div style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.85rem;">
+                  <span style="display: flex; align-items: center; gap: 0.8rem; color: var(--text-main);"><i class="fab fa-whatsapp" style="font-size: 1.2rem; color: #22c55e;"></i> WhatsApp Directo: +52 55 1234 5678</span>
+                  <a href="mailto:soporte@parknexus.com" style="display: flex; align-items: center; gap: 0.8rem; text-decoration: none; color: var(--text-main);"><i class="fas fa-envelope" style="font-size: 1.1rem; color: #3b82f6;"></i> soporte@parknexus.com</a>
+                  <a href="tel:+525512345678" style="display: flex; align-items: center; gap: 0.8rem; text-decoration: none; color: var(--text-main);"><i class="fas fa-phone-alt" style="font-size: 1.1rem; color: var(--primary-color);"></i> Oficina: 800-PARKNEXUS</a>
+                </div>
+              </div>
+            </div>
+            
+            <!-- FAQs -->
+            <div style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+              <h4 style="color: var(--primary-color); margin-bottom: 1.5rem;"><i class="fas fa-question-circle"></i> Preguntas Frecuentes (FAQs)</h4>
+              <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="faq-item">
+                  <h5 style="font-weight: 700; margin-bottom: 0.2rem;">¿Cómo cancelo una reservación activa?</h5>
+                  <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">Dirígete al apartado de "Tickets y Pagos". Si tu ticket está en estado de reserva, presiona el botón rojo "Cancelar Reserva" para liberar tu cajón inmediatamente.</p>
+                </div>
+                <div class="faq-item">
+                  <h5 style="font-weight: 700; margin-bottom: 0.2rem;">¿Cómo puedo registrar un nuevo coche?</h5>
+                  <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">Ingresa a la sección "Mis Vehículos" y presiona "Registrar Vehículo Nuevo". Ingresa la placa, marca y modelo para poder asociarlo de forma automática a tus reservas.</p>
+                </div>
+                <div class="faq-item">
+                  <h5 style="font-weight: 700; margin-bottom: 0.2rem;">¿Cuáles son las tarifas según la duración?</h5>
+                  <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">Ofrecemos 10 minutos (Tarifa: $10.00 MXN), 30 minutos (Tarifa: $25.00 MXN) y 1 hora (Tarifa: $45.00 MXN). Puedes saldar esto usando el saldo prepago de tu Billetera Digital.</p>
+                </div>
+                <div class="faq-item">
+                  <h5 style="font-weight: 700; margin-bottom: 0.2rem;">¿Cómo recupero mi contraseña?</h5>
+                  <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">En la pantalla de acceso principal, selecciona la opción "¿Olvidaste tu contraseña?" e introduce tu correo electrónico registrado para enviarte un enlace de recuperación.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA 11: Administrador - Editor de Mapa (Admin Map Editor View) -->
+        <div id="admin-editor-container" style="display: none; padding-bottom: 5rem;">
+          <div class="admin-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div>
+              <h3>Editor Gráfico y Distribución de Cajones</h3>
+              <p>Agrega, elimina y reposiciona cajones en el croquis en tiempo real. Configura cajones para personas con discapacidad o fuera de servicio.</p>
+            </div>
+            <button class="btn-action-car" id="btn-editor-add-spot" style="background: var(--primary-color); width: auto;"><i class="fas fa-plus"></i> Agregar Nuevo Cajón al Mapa</button>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;">
+            <!-- Lienzo del mapa editable -->
+            <div style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
+              <h4 style="margin-bottom: 1rem; color: var(--primary-color);"><i class="fas fa-map-marked-alt"></i> Croquis de Distribución</h4>
+              
+              <!-- Selector de piso para el editor -->
+              <div class="floor-selector-container" id="editor-floor-selector" style="margin-bottom: 1.5rem;">
+                <button class="floor-tab active" data-floor="1"><i class="fas fa-layer-group"></i> Piso 1</button>
+                <button class="floor-tab" data-floor="2"><i class="fas fa-layer-group"></i> Piso 2</button>
+                <button class="floor-tab" data-floor="3"><i class="fas fa-layer-group"></i> Piso 3</button>
+                <button class="floor-tab" data-floor="4"><i class="fas fa-layer-group"></i> Piso 4</button>
+              </div>
+              
+              <div class="map-grid-wrapper" style="height: 520px; overflow: hidden; position: relative;">
+                <div class="map-scroll-content" style="width: 100%; height: 520px; position: relative;">
+                  <div class="map-grid-blocks" id="editor-map-grid-blocks">
+                    <!-- Se renderizan los spots editables -->
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Panel de controles de edición -->
+            <div style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02); height: fit-content;" id="editor-controls-panel">
+              <h4 style="color: var(--primary-color); margin-bottom: 1.5rem;"><i class="fas fa-sliders-h"></i> Propiedades del Cajón Seleccionado</h4>
+              
+              <div id="editor-no-selected" class="no-ticket-state" style="padding: 2rem 1rem;">
+                <i class="fas fa-mouse-pointer empty-icon" style="font-size: 2rem;"></i>
+                <p style="font-size: 0.95rem;">Ningún cajón seleccionado</p>
+                <span class="subtext">Haz clic sobre un cajón en el croquis izquierdo para editar sus propiedades.</span>
+              </div>
+              
+              <div id="editor-selected-form" style="display: none;" class="modal-form">
+                <div class="form-group-edit">
+                  <label>Identificador del Cajón</label>
+                  <input type="text" id="edit-spot-name" value="">
+                </div>
+                
+                <div class="form-group-edit">
+                  <label>Tipo de Cajón (Estado / Propósito)</label>
+                  <select id="edit-spot-type" class="sim-select" style="width: 100%; padding: 0.8rem; background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px;">
+                    <option value="Disponible">Disponible (Verde)</option>
+                    <option value="Ocupado">Ocupado (Rojo)</option>
+                    <option value="Reservado">Reservado (Amarillo)</option>
+                    <option value="Discapacidad">Especial - Discapacidad (Azul)</option>
+                    <option value="Fuera de Servicio">Fuera de Servicio (Gris)</option>
+                  </select>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                  <div class="form-group-edit">
+                    <label>Coordenada X (px)</label>
+                    <input type="number" id="edit-spot-x" value="0">
+                  </div>
+                  <div class="form-group-edit">
+                    <label>Coordenada Y (px)</label>
+                    <input type="number" id="edit-spot-y" value="0">
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                  <div class="form-group-edit">
+                    <label>Ancho (px)</label>
+                    <input type="number" id="edit-spot-w" value="30">
+                  </div>
+                  <div class="form-group-edit">
+                    <label>Alto (px)</label>
+                    <input type="number" id="edit-spot-h" value="38">
+                  </div>
+                </div>
+                
+                <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+                  <button id="btn-editor-save" class="btn-save" style="flex: 1;"><i class="fas fa-save"></i> Guardar Cambios</button>
+                  <button id="btn-editor-delete" class="btn-save" style="flex: 1; background: #ef4444;"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA 12: Administrador - Gestión de Usuarios (Admin Users View) -->
+        <div id="admin-users-container" style="display: none; padding-bottom: 5rem;">
+          <div class="admin-header" style="margin-bottom: 1.5rem;">
+            <h3>Gestión de Cuentas de Usuario</h3>
+            <p>Supervisa todos los usuarios registrados, cambia sus privilegios o suspende cuentas de forma inmediata.</p>
+          </div>
+          <div class="activity-table-wrapper" style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <table class="activity-table">
+              <thead>
+                <tr>
+                  <th>Nombre Completo</th>
+                  <th>Correo</th>
+                  <th>Número Celular</th>
+                  <th>Rol</th>
+                  <th>Nivel / XP</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-table-body">
+                <!-- Se llena dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VISTA 13: Administrador - Ver Reservas (Admin Reservations View) -->
+        <div id="admin-reservations-container" style="display: none; padding-bottom: 5rem;">
+          <div class="admin-header" style="margin-bottom: 1.5rem;">
+            <h3>Auditoría de Reservaciones y Cancelaciones</h3>
+            <p>Supervisa en tiempo real las reservas del sistema, monitorea expiraciones automáticas e historiales de cancelación.</p>
+          </div>
+          <div class="activity-table-wrapper" style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <table class="activity-table">
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Cajón</th>
+                  <th>Inicio</th>
+                  <th>Estado</th>
+                  <th>Tolerancia Restante</th>
+                </tr>
+              </thead>
+              <tbody id="admin-reservations-table-body">
+                <!-- Se llena dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VISTA 14: Administrador - Historial de Pagos (Admin Payments View) -->
+        <div id="admin-payments-container" style="display: none; padding-bottom: 5rem;">
+          <div class="admin-header" style="margin-bottom: 1.5rem;">
+            <h3>Historial General de Pagos Digitales</h3>
+            <p>Registro completo de transacciones cobradas por concepto de estacionamiento o reservaciones.</p>
+          </div>
+          <div class="activity-table-wrapper" style="background: var(--sidebar-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+            <table class="activity-table">
+              <thead>
+                <tr>
+                  <th>ID Transacción</th>
+                  <th>Código Ticket</th>
+                  <th>Método de Pago</th>
+                  <th>Fecha/Hora</th>
+                  <th>Monto Total</th>
+                </tr>
+              </thead>
+              <tbody id="admin-payments-table-body">
+                <!-- Se llena dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Botones Flotantes (Floating Action Buttons) -->
+    <!-- El botón verde de Mapa ahora sirve para alternar la vista -->
+    <div class="floating-actions">
+      <button class="fab fab-light" title="Agregar"><i class="fas fa-plus"></i></button>
+      <button class="fab fab-green" id="btn-toggle-map" title="Ver Mapa"><i class="fas fa-map-marker-alt"></i></button>
+    </div>
+  </div>
+
+  <!-- --- MODALES Y AVISOS --- -->
+
+  <!-- Modal de Registro de Vehículo para Reservación -->
+  <div id="reservation-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <button class="modal-close" id="btn-close-reservation-modal"><i class="fas fa-times"></i></button>
+      <h2>Detalles de Reserva</h2>
+      <p style="color: var(--text-muted); text-align: center; margin-top: -1rem; margin-bottom: 1.5rem; font-size: 0.85rem;">Ingresa los datos para generar tu ticket digital automático.</p>
+      
+      <div class="modal-form">
+        <div class="form-group-edit">
+          <label>Cajón Seleccionado</label>
+          <input type="text" id="reserve-spot-display" value="A-03" readonly style="font-weight: bold; color: var(--primary-color);">
+        </div>
+        
+        <div class="form-group-edit">
+          <label>Nombre del Conductor <i class="fas fa-user"></i></label>
+          <input type="text" id="reserve-user-name" value="Alex Rivera" required>
+        </div>
+        
+        <div class="form-group-edit">
+          <label>Placa del Vehículo <i class="fas fa-id-card"></i></label>
+          <input type="text" id="reserve-vehicle-plate" placeholder="Ej. YXS-992-B" required>
+        </div>
+        
+        <div class="form-group-edit">
+          <label>Modelo / Color <i class="fas fa-car"></i></label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <input type="text" id="reserve-vehicle-model" placeholder="Ej. Tesla Model Y" required>
+            <input type="text" id="reserve-vehicle-color" placeholder="Ej. Rojo" required>
+          </div>
+        </div>
+        
+        <div class="form-group-edit">
+          <label>Tiempo Estimado de Estancia</label>
+          <select id="reserve-duration" class="sim-select" style="width: 100%; padding: 0.8rem; background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px;">
+            <option value="10">10 Minutos (Tarifa: $10.00 MXN - Demo: 60s)</option>
+            <option value="30">30 Minutos (Tarifa: $25.00 MXN - Demo: 180s)</option>
+            <option value="60">1 Hora (Tarifa: $45.00 MXN - Demo: 360s)</option>
+          </select>
+        </div>
+        
+        <button id="btn-confirm-reservation" class="btn-save"><i class="fas fa-check-circle"></i> Confirmar y Generar Ticket</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Pasarela de Pagos (Cobro Digital) -->
+  <div id="payment-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 450px;">
+      <button class="modal-close" id="btn-close-payment-modal"><i class="fas fa-times"></i></button>
+      <h2>Procesar Pago</h2>
+      
+      <div class="payment-bill-box">
+        <div class="bill-row">
+          <span>Ticket Código:</span>
+          <strong id="pay-ticket-code">--</strong>
+        </div>
+        <div class="bill-row">
+          <span>Cajón de Estacionamiento:</span>
+          <strong id="pay-ticket-spot">--</strong>
+        </div>
+        <div class="bill-row">
+          <span>Tiempo Transcurrido:</span>
+          <strong id="pay-ticket-time">00:00:00</strong>
+        </div>
+        <div class="divider"></div>
+        <div class="bill-row font-large">
+          <span>Subtotal:</span>
+          <span id="pay-subtotal">$0.00</span>
+        </div>
+        <div class="bill-row text-muted" style="font-size: 0.8rem;">
+          <span>IVA (16%):</span>
+          <span id="pay-tax">$0.00</span>
+        </div>
+        <div class="bill-row font-large total-row">
+          <span>Total a Pagar:</span>
+          <strong id="pay-total">$0.00</strong>
+        </div>
+      </div>
+      
+      <div class="payment-method-selector">
+        <label>Selecciona tu Método de Pago</label>
+        <div class="methods-grid">
+          <div class="method-btn active" id="method-card">
+            <i class="fas fa-credit-card"></i>
+            <span>Tarjeta bancaria</span>
+          </div>
+          <div class="method-btn" id="method-cash">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>Pago en Efectivo</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Campos de Tarjeta -->
+      <div id="card-fields-wrapper" class="modal-form">
+        <div class="form-group-edit">
+          <label>Número de Tarjeta</label>
+          <input type="text" id="card-number" placeholder="4532 9982 1102 9934" maxlength="19">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group-edit">
+            <label>Vencimiento</label>
+            <input type="text" id="card-expiry" placeholder="MM/AA" maxlength="5">
+          </div>
+          <div class="form-group-edit">
+            <label>CVV</label>
+            <input type="password" id="card-cvv" placeholder="***" maxlength="3">
+          </div>
+        </div>
+      </div>
+
+      <!-- Campos de Efectivo (Instrucciones) -->
+      <div id="cash-fields-wrapper" style="display: none; padding: 1rem; background: var(--bg-color); border: 1px dashed var(--border-color); border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
+        <i class="fas fa-cash-register" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 0.5rem;"></i>
+        <p style="font-size: 0.9rem; margin-bottom: 0.2rem; font-weight: bold;">Simulación de Depósito</p>
+        <p style="font-size: 0.75rem; color: var(--text-muted);">Deposita billetes o monedas en la terminal física de cobro.</p>
+        <button id="btn-insert-cash" class="btn-change-photo" style="margin-top: 0.8rem; border-color: #f59e0b; color: #f59e0b;"><i class="fas fa-coins"></i> Simular Inserción de Efectivo ($)</button>
+      </div>
+      
+      <button id="btn-submit-payment" class="btn-save" style="margin-top: 1rem;"><i class="fas fa-lock"></i> Pagar Ahora (<span id="pay-btn-amount">$0.00</span>)</button>
+    </div>
+  </div>
+
+  <!-- Modal de Recibo Digital (Comprobante Físico Simulado) -->
+  <div id="receipt-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 380px; padding: 0;">
+      <div class="printed-receipt">
+        <div class="receipt-header">
+          <i class="fas fa-check-circle success-icon"></i>
+          <h3>PAGO EXITOSO</h3>
+          <p>¡Gracias por usar Precision Park!</p>
+        </div>
+        
+        <div class="receipt-body">
+          <div class="receipt-divider-line"></div>
+          <div class="receipt-title">COMPROBANTE SIMULADO</div>
+          <div class="receipt-divider-line"></div>
+          
+          <div class="receipt-row">
+            <span>TRANSACCIÓN ID:</span>
+            <span id="rec-trans-id">TX-829A0F</span>
+          </div>
+          <div class="receipt-row">
+            <span>TICKET:</span>
+            <span id="rec-ticket-code">--</span>
+          </div>
+          <div class="receipt-row">
+            <span>CAJÓN:</span>
+            <span id="rec-spot">--</span>
+          </div>
+          <div class="receipt-row">
+            <span>VEHÍCULO:</span>
+            <span id="rec-vehicle">--</span>
+          </div>
+          <div class="receipt-row">
+            <span>PLACA:</span>
+            <span id="rec-plate">--</span>
+          </div>
+          <div class="receipt-row">
+            <span>TIEMPO TOTAL:</span>
+            <span id="rec-duration">--</span>
+          </div>
+          <div class="receipt-row">
+            <span>MÉTODO DE PAGO:</span>
+            <span id="rec-method">TARJETA</span>
+          </div>
+          
+          <div class="receipt-divider-line"></div>
+          <div class="receipt-row font-large">
+            <span>PAGADO TOTAL:</span>
+            <strong id="rec-amount">$0.00</strong>
+          </div>
+          <div class="receipt-divider-line"></div>
+          
+          <!-- Barcode de recibo simulado -->
+          <div class="receipt-barcode">
+            <div class="barcode-lines"></div>
+            <span style="font-size: 0.6rem; letter-spacing: 2px;">PAID-PRECISION-PARK</span>
+          </div>
+        </div>
+        
+        <button id="btn-close-receipt" class="btn-receipt-close">Cerrar e Imprimir Comprobante</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Edición de Perfil de Usuario -->
+  <div id="user-profile-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <button class="modal-close" id="btn-close-modal"><i class="fas fa-times"></i></button>
+      <h2>Perfil de Usuario</h2>
+
+      <div class="modal-avatar-edit">
+        <div class="avatar-large" id="modal-avatar-preview"><i class="fas fa-user"></i></div>
+        <!-- Botón para simular subir foto -->
+        <button class="btn-change-photo" id="btn-change-photo"><i class="fas fa-camera"></i> Cambiar Foto</button>
+      </div>
+
+      <div class="modal-form">
+        <!-- Campo para editar nombre con un icono de lápiz -->
+        <div class="form-group-edit">
+          <label>Nombre <i class="fas fa-pencil-alt"></i></label>
+          <input type="text" id="input-edit-name" value="Alex Rivera">
+        </div>
+        <!-- Campo para editar correo electrónico -->
+        <div class="form-group-edit">
+          <label>Correo Electrónico <i class="fas fa-pencil-alt"></i></label>
+          <input type="email" id="input-edit-email" value="alex.rivera@example.com">
+        </div>
+        <!-- Apellidos y Celular extendidos -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem;">
+          <div class="form-group-edit" style="margin-bottom: 0;">
+            <label>A. Paterno</label>
+            <input type="text" id="input-edit-paternal" value="">
+          </div>
+          <div class="form-group-edit" style="margin-bottom: 0;">
+            <label>A. Materno</label>
+            <input type="text" id="input-edit-maternal" value="">
+          </div>
+        </div>
+        <div class="form-group-edit">
+          <label>Número Celular</label>
+          <input type="tel" id="input-edit-phone" value="">
+        </div>
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+          <button id="btn-save-profile" class="btn-save" style="flex: 1;">Guardar Cambios</button>
+          <button id="btn-logout-profile" class="btn-save" style="flex: 1; background: #ef4444;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Registro de Vehículo -->
+  <div id="vehicle-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <button class="modal-close" id="btn-close-vehicle-modal"><i class="fas fa-times"></i></button>
+      <h2 id="vehicle-modal-title">Registrar Vehículo</h2>
+      
+      <div class="modal-form">
+        <input type="hidden" id="vehicle-edit-id">
+        <div class="form-group-edit">
+          <label>Placa <i class="fas fa-id-card"></i></label>
+          <input type="text" id="veh-plate" placeholder="Ej. YXS-992-B" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+          <div class="form-group-edit" style="margin-bottom: 0;">
+            <label>Marca</label>
+            <input type="text" id="veh-brand" placeholder="Ej. Toyota" required>
+          </div>
+          <div class="form-group-edit" style="margin-bottom: 0;">
+            <label>Modelo</label>
+            <input type="text" id="veh-model" placeholder="Ej. Prius" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+          <div class="form-group-edit" style="margin-bottom: 0;">
+            <label>Año</label>
+            <input type="number" id="veh-year" placeholder="2022" required>
+          </div>
+          <div class="form-group-edit" style="margin-bottom: 0;">
+            <label>Color</label>
+            <input type="text" id="veh-color" placeholder="Ej. Blanco" required>
+          </div>
+        </div>
+        <div class="form-group-edit">
+          <label>Propietario</label>
+          <input type="text" id="veh-owner" placeholder="Nombre completo del propietario" required>
+        </div>
+        <div class="form-group-edit">
+          <label>Tipo de Vehículo</label>
+          <select id="veh-type" class="sim-select" style="width: 100%;">
+            <option value="Sedán">Sedán</option>
+            <option value="SUV">SUV</option>
+            <option value="Pickup">Pickup</option>
+            <option value="Motocicleta">Motocicleta</option>
+            <option value="Compacto">Compacto</option>
+          </select>
+        </div>
+        <div class="form-group-edit">
+          <label>Foto del Vehículo (URL opcional)</label>
+          <input type="text" id="veh-photo" placeholder="https://ejemplo.com/foto.jpg">
+        </div>
+        <button id="btn-save-vehicle" class="btn-save"><i class="fas fa-save"></i> Guardar Vehículo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Recarga de Billetera -->
+  <div id="wallet-recharge-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <button class="modal-close" id="btn-close-recharge-modal"><i class="fas fa-times"></i></button>
+      <h2>Recargar Saldo</h2>
+      
+      <div class="modal-form">
+        <div class="form-group-edit">
+          <label>Monto a Recargar ($ MXN)</label>
+          <input type="number" id="recharge-amount" placeholder="Ej. 100" min="10" value="100" required>
+        </div>
+        <div class="form-group-edit">
+          <label>Método de Recarga</label>
+          <select id="recharge-method" class="sim-select" style="width: 100%;">
+            <option value="Tarjeta">Tarjeta de Crédito / Débito</option>
+            <option value="SPEI">SPEI (Transferencia Bancaria)</option>
+            <option value="OXXO">Referencia OXXO Pay</option>
+          </select>
+        </div>
+        
+        <!-- Detalles condicionales según el método -->
+        <div id="recharge-card-details" class="recharge-details-panel">
+          <div class="form-group-edit">
+            <label>Número de Tarjeta</label>
+            <input type="text" id="recharge-card-num" placeholder="4532 9982 1102 9934" maxlength="19">
+          </div>
+        </div>
+        
+        <div id="recharge-spei-details" class="recharge-details-panel" style="display: none; padding: 1rem; background: var(--bg-color); border: 1px dashed var(--border-color); border-radius: 8px; font-size: 0.8rem; margin-bottom: 1rem;">
+          <p>Transfiere desde tu banca móvil a la siguiente CLABE Interbancaria ficticia:</p>
+          <p style="font-family: monospace; font-size: 0.95rem; font-weight: bold; text-align: center; margin: 0.5rem 0; color: var(--primary-color);">0123 4567 8901 2345 67</p>
+          <p style="color: var(--text-muted); font-size: 0.75rem;">El saldo se acreditará inmediatamente de forma simulada al procesar.</p>
+        </div>
+        
+        <div id="recharge-oxxo-details" class="recharge-details-panel" style="display: none; padding: 1rem; background: var(--bg-color); border: 1px dashed var(--border-color); border-radius: 8px; font-size: 0.8rem; margin-bottom: 1rem; text-align: center;">
+          <p>Presenta este código de barras en caja en cualquier OXXO:</p>
+          <div class="barcode-lines" style="height: 35px; width: 140px; margin: 0.5rem auto; background: repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 5px);"></div>
+          <p style="font-family: monospace; font-weight: bold;">8372-9918-2738</p>
+        </div>
+        
+        <button id="btn-submit-recharge" class="btn-save"><i class="fas fa-wallet"></i> Procesar Recarga</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor para notificaciones flotantes (Toasts) -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Archivo JavaScript con la lógica de la aplicación -->
+  <script src="js/app.js"></script>
+</body>
+
+</html>
